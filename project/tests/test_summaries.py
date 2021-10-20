@@ -24,3 +24,19 @@ def test_create_summaries_invalid_json(test_app):
             }
         ]
     }
+
+
+def test_read_summary(test_app_with_db):
+    response = test_app_with_db.post(
+        "/summaries/", data=json.dumps({"url": "https://foo.bar"})
+    )
+    summary_id = response.json()["id"]
+
+    response = test_app_with_db.get(f"/summaries/{summary_id}/")
+    assert response.status_code == 200
+
+    response_dict = response.json()
+    assert response_dict["id"] == summary_id
+    assert response_dict["url"] == "https://foo.bar"
+    assert response_dict["summary"]
+    assert response_dict["created_at"]
