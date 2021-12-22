@@ -2,12 +2,12 @@ from pydantic import BaseModel, AnyHttpUrl
 
 
 class SummaryPayloadSchema(BaseModel):
-    url: str
+    url: AnyHttpUrl
 
 
 class SummaryResponseSchema(SummaryPayloadSchema):
     id: int
 
 
-class SummaryPayloadSchema(BaseModel):
-    url: AnyHttpUrl
+class SummaryUpdatePayloadSchema(SummaryPayloadSchema):
+    summary: str
