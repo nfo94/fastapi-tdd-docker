@@ -6,6 +6,7 @@ tortoise-orm==0.17.4
 aerich==0.5.3
 pytest-cov==2.12.1
 requests==2.25.1
+newspaper3k==0.2.8
 
 pytest==6.2.4
 pytest-cov==2.12.1
