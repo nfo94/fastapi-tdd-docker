@@ -1,11 +1,12 @@
 name: Continuous Integration and Delivery
-'on':
-  - push
+
+on: [push]
+
 env:
-  IMAGE: >-
-    docker.pkg.github.com/$(echo $GITHUB_REPOSITORY | tr '[A-Z]'
-    '[a-z]')/summarizer
+  IMAGE: docker.pkg.github.com/$(echo $GITHUB_REPOSITORY | tr '[A-Z]' '[a-z]')/summarizer
+
 jobs:
+
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
@@ -15,11 +16,9 @@ jobs:
         with:
           ref: main
       - name: Log in to GitHub Packages
-        run: >-
-          echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR}
-          --password-stdin docker.pkg.github.com
+        run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull images
         run: |
           docker pull ${{ env.IMAGE }}-builder:latest || true
@@ -54,7 +53,7 @@ jobs:
         - name: Log in to GitHub Packages
           run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
           env:
-            GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         - name: Pull images
           run: |
             docker pull ${{ env.IMAGE }}-builder:latest || true
@@ -84,9 +83,7 @@ jobs:
             -p 5003:8765 \
             ${{ env.IMAGE }}-final:latest
         - name: Install requirements
-          run: >-
-            docker exec fastapi-tdd pip install black==21.12b0 flake8==4.0.1
-            isort==5.10.1 pytest==6.2.5
+          run: docker exec fastapi-tdd pip install black==21.12b0 flake8==4.0.1 isort==5.10.1 pytest==6.2.5
         - name: Pytest
           run: docker exec fastapi-tdd python -m pytest .
         - name: Flake8
@@ -99,23 +96,19 @@ jobs:
   deploy:
     name: Deploy to Heroku
     runs-on: ubuntu-latest
-    needs:
-      - build
-      - test
+    needs: [build, test]
     env:
       HEROKU_APP_NAME: sleepy-thicket-77414
-      HEROKU_REGISTRY_IMAGE: 'registry.heroku.com/${HEROKU_APP_NAME}/summarizer'
+      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/summarizer
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.0
         with:
           ref: main
       - name: Log in to GitHub Packages
-        run: >-
-          echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR}
-          --password-stdin docker.pkg.github.com
+        run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull images
         run: |
           docker pull ${{ env.IMAGE }}-builder:latest || true
@@ -135,18 +128,15 @@ jobs:
             --file ./project/Dockerfile.prod \
             "./project"
       - name: Log in to the Heroku Container Registry
-        run: 'docker login -u _ -p ${HEROKU_AUTH_TOKEN} registry.heroku.com'
+        run: docker login -u _ -p ${HEROKU_AUTH_TOKEN} registry.heroku.com
         env:
-          HEROKU_AUTH_TOKEN: '${{ secrets.HEROKU_AUTH_TOKEN }}'
+          HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
       - name: Push to the registry
-        run: 'docker push ${{ env.HEROKU_REGISTRY_IMAGE }}:latest'
+        run: docker push ${{ env.HEROKU_REGISTRY_IMAGE }}:latest
       - name: Set environment variables
-        run: >
-          echo "HEROKU_REGISTRY_IMAGE=${{ env.HEROKU_REGISTRY_IMAGE }}" >>
-          $GITHUB_ENV
-
-          echo "HEROKU_AUTH_TOKEN=${{ secrets.HEROKU_AUTH_TOKEN }}" >>
-          $GITHUB_ENV
+        run: |
+          echo "HEROKU_REGISTRY_IMAGE=${{ env.HEROKU_REGISTRY_IMAGE }}" >> $GITHUB_ENV
+          echo "HEROKU_AUTH_TOKEN=${{ secrets.HEROKU_AUTH_TOKEN }}" >> $GITHUB_ENV
       - name: Release
         run: |
           chmod +x ./release.sh
