@@ -5,6 +5,10 @@
 Text summarizer app built with Python, FastAPI, Docker, PostgreSQL, Tortoise
 ORM, aerich and Pytest, applying TDD.
 
+#### API docs:
+
+https://intense-plains-24487.herokuapp.com/docs
+
 #### To run the containers:
 
 ```bash
